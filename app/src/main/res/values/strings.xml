@@ -5,4 +5,5 @@
     <string name="download">Download</string>
     <string name="upload">Upload</string>
     <string name="developer">Made by Shubham Jangle</string>
+    <string name="textViewNetworkType">NO NETWORK</string>
 </resources>
