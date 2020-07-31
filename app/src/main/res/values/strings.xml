@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Net Speed Meter</string>
+    <string name="btnText">START</string>
+    <string name="speedText">0 kbps</string>
+    <string name="download">Download</string>
+    <string name="upload">Upload</string>
 </resources>
