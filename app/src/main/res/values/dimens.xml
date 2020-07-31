@@ -2,5 +2,5 @@
 <resources>
     <dimen name="mainTextSize">70sp</dimen>
     <dimen name="staticTextSize">18sp</dimen>
-    <dimen name="btnTextSize">20sp</dimen>
+    <dimen name="devTextSize">14sp</dimen>
 </resources>

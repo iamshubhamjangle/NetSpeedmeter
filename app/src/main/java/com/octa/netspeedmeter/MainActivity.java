@@ -17,12 +17,10 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    public boolean doubleBackToExitPressedOnce;
+    private boolean doubleBackToExitPressedOnce;
     private Handler mHandler = new Handler();
-    public static boolean notification_status = true;
-    Thread dataThread;
-    TextView textViewdownload, textViewUpload, textViewInfo;
-    Button startButton;
+    private Thread dataThread;
+    private TextView textViewdownload, textViewUpload, textViewInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         doubleBackToExitPressedOnce = false;
 
-        startButton = findViewById(R.id.buttonStart);
         textViewdownload = findViewById(R.id.download);
         textViewUpload =  findViewById(R.id.upload);
         textViewInfo = findViewById(R.id.textViewInfo);
@@ -44,15 +41,15 @@ public class MainActivity extends AppCompatActivity {
 
     private final class MyThreadClass implements Runnable {
         public void run() {
-            int noOfLoop = 0;
+//            int noOfLoop = 0;
 
             synchronized (this) {
                 while (MainActivity.this.dataThread.getName().equals("showSpeed")) {
-                    Log.d("MyTAG", String.valueOf(noOfLoop));
+//                    Log.d("MyTAG", String.valueOf(noOfLoop));
                     getData();
                     try {
                         wait(1000);
-                        noOfLoop++;
+//                        noOfLoop++;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -68,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
         List<Long> allData = RetrieveData.findData();
         Long mDownload = allData.get(0);
         Long mUpload = allData.get(1);
-        //long totalData = mDownload + mUpload;
 
         if (network_status!="no_connection") {
             showSpeed(mDownload, mUpload);
@@ -80,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     public void showSpeed(long mDownload, long mUpload) {
         List<String> connStatus = NetworkUtil.getConnectivityInfo(getApplicationContext());
 
-        String network_name;
+        final String network_name;
 
         if ((connStatus.get(0)).equals("wifi_enabled")) {
             // (connStatus(1)) is network name and (connStatus(2)) is the ssid
@@ -92,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         DecimalFormat df = new DecimalFormat("#.##");
-        String downSpeed, upSpeed;
+        final String downSpeed, upSpeed;
 
 
         if (mUpload < 128) {
@@ -112,9 +108,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Log.d("MyTAG", String.format("%s %s %s", downSpeed, upSpeed, network_name));
-//        textViewdownload.setText(downSpeed);
-//        textViewUpload.setText(upSpeed);
-//        textViewInfo.setText(network_name);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                textViewdownload.setText(downSpeed);
+                textViewUpload.setText(upSpeed);
+                textViewInfo.setText(network_name);
+            }
+        });
     }
 
     public void onBackPressed() {
@@ -129,5 +131,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }, 5000);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 }
