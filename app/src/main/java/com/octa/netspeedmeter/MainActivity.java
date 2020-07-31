@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
     public static boolean notification_status = true;
     Thread dataThread;
+    TextView textViewdownload, textViewUpload, textViewInfo;
+    Button startButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,26 +32,27 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         doubleBackToExitPressedOnce = false;
 
-        Button startButton = (Button) findViewById(R.id.buttonStart);
-        TextView textViewdownload = (TextView) findViewById(R.id.download);
-        TextView textViewUpload = (TextView) findViewById(R.id.upload);
+        startButton = findViewById(R.id.buttonStart);
+        textViewdownload = findViewById(R.id.download);
+        textViewUpload =  findViewById(R.id.upload);
+        textViewInfo = findViewById(R.id.textViewInfo);
 
         this.dataThread = new Thread(new MyThreadClass());
-        this.dataThread.setName("showNotification");
+        this.dataThread.setName("showSpeed");
         this.dataThread.start();
     }
 
     private final class MyThreadClass implements Runnable {
         public void run() {
-            int i = 0;
-            Log.d("MyTAG", String.valueOf(i));
+            int noOfLoop = 0;
 
             synchronized (this) {
-                while (MainActivity.this.dataThread.getName().equals("showNotification")) {
+                while (MainActivity.this.dataThread.getName().equals("showSpeed")) {
+                    Log.d("MyTAG", String.valueOf(noOfLoop));
                     getData();
                     try {
                         wait(1000);
-                        i++;
+                        noOfLoop++;
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -65,22 +68,23 @@ public class MainActivity extends AppCompatActivity {
         List<Long> allData = RetrieveData.findData();
         Long mDownload = allData.get(0);
         Long mUpload = allData.get(1);
-        long receiveData = mDownload + mUpload;
+        //long totalData = mDownload + mUpload;
 
         if (network_status!="no_connection") {
-            showNotification(receiveData);
+            showSpeed(mDownload, mUpload);
         }else{
-            Log.d("MyTAG", "0kbps");
+            Log.d("MyTAG", "NO NETWORK");
         }
     }
 
-    public void showNotification(long receiveData) {
+    public void showSpeed(long mDownload, long mUpload) {
         List<String> connStatus = NetworkUtil.getConnectivityInfo(getApplicationContext());
 
         String network_name;
 
         if ((connStatus.get(0)).equals("wifi_enabled")) {
-            network_name = (connStatus.get(1)) + " " + (connStatus.get(2));
+            // (connStatus(1)) is network name and (connStatus(2)) is the ssid
+            network_name = "WIFI strength " + (connStatus.get(2));
         } else if ((connStatus.get(0)).equals("mobile_enabled")) {
             network_name = connStatus.get(1);
         } else {
@@ -88,16 +92,29 @@ public class MainActivity extends AppCompatActivity {
         }
 
         DecimalFormat df = new DecimalFormat("#.##");
-        String speed;
-        if (receiveData < 128) {
-            speed = "Speed " + ((int) receiveData) + " B/s" + " " + network_name;
-        } else if (receiveData < 1048576) {
-            speed = "Speed " + (((int) receiveData) / 1024) + " KB/s" + " " + network_name;
+        String downSpeed, upSpeed;
+
+
+        if (mUpload < 128) {
+            upSpeed = ((int) mUpload) + " B/s";
+        } else if (mUpload < 1048576) {
+            upSpeed = (((int) mUpload) / 1024) + " KB/s";
         } else {
-            speed = "Speed " + df.format(((double) receiveData) / 1048576.0d) + " MB/s" + " " + network_name;
+            upSpeed = df.format(((double) mUpload) / 1048576.0d) + " MB/s";
         }
 
-        Log.d("MyTAG", speed);
+        if (mDownload < 128) {
+            downSpeed = ((int) mDownload) + " B/s";
+        } else if (mDownload < 1048576) {
+            downSpeed = (((int) mDownload) / 1024) + " KB/s";
+        } else {
+            downSpeed = df.format(((double) mDownload) / 1048576.0d) + " MB/s";
+        }
+
+        Log.d("MyTAG", String.format("%s %s %s", downSpeed, upSpeed, network_name));
+//        textViewdownload.setText(downSpeed);
+//        textViewUpload.setText(upSpeed);
+//        textViewInfo.setText(network_name);
     }
 
     public void onBackPressed() {
